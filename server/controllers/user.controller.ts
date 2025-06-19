@@ -1,5 +1,11 @@
 import express, { Response, Router } from 'express';
-import { UserRequest, User, UserCredentials, UserByUsernameRequest, UserResponse } from '../types/types';
+import {
+  UserRequest,
+  User,
+  UserCredentials,
+  UserByUsernameRequest,
+  UserResponse,
+} from '../types/types';
 import {
   deleteUserByUsername,
   getUserByUsername,
@@ -26,34 +32,34 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const createUser = async (req: UserRequest, res: Response): Promise<void> => {
-    // TODO: Task 1 - Implement the createUser function
-     try {
+    try {
       const { username, password } = req.body;
 
-      if(!username || !password){
+      if (!username || !password) {
         res.status(400).send('Invalid user body');
         return;
       }
 
       const newUser: User = {
-      username,
-      password,
-      dateJoined: new Date(), // Set the dateJoined as the current date
-    };
-    
-    const userResponse: UserResponse = await saveUser(newUser);
-    
-    if('error' in userResponse){
-      console.error("createUser Failed to create user.", userResponse.error)
-      res.status(500).json({ error: userResponse.error });
-      return;
-    }
+        username,
+        password,
+        dateJoined: new Date(), // Set the dateJoined as the current date
+      };
 
-    res.status(200).json(userResponse);
-  } catch(exception: unknown){
-      console.error("createUser Unknown exception!", exception);
-      res.status(500).json({error: "Failed to create user."});
-  }};
+      const userResponse: UserResponse = await saveUser(newUser);
+
+      if ('error' in userResponse) {
+        console.error('createUser Failed to create user', userResponse.error);
+        res.status(500).json({ error: userResponse.error });
+        return;
+      }
+
+      res.status(200).json(userResponse);
+    } catch (exception: Error) {
+      console.error('createUser Unknown exception!', exception);
+      res.status(500).json({ error: 'Failed to create user.' });
+    }
+  };
 
   /**
    * Handles user login by validating credentials.
@@ -62,27 +68,26 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const userLogin = async (req: UserRequest, res: Response): Promise<void> => {
-    // TODO: Task 1 - Implement the userLogin function
-    try{
+    try {
       const { username, password } = req.body;
 
-      if(!username || !password){
+      if (!username || !password) {
         res.status(400).send('Invalid user body');
         return;
       }
 
-      const credentials: UserCredentials = { username: username, password: password};
+      const credentials: UserCredentials = { username, password };
       const user = await loginUser(credentials);
-      
-      if('error' in user){
-        res.status(401).json({error: user.error});
+
+      if ('error' in user) {
+        res.status(401).json({ error: user.error });
         return;
       }
 
       res.status(200).json(user);
-    } catch(exception: unknown){
-      console.error("userLogin Unknown exception!", exception);
-      res.status(500).json({error: "Failed to login."});
+    } catch (exception: unknown) {
+      console.error('userLogin Unknown exception!', exception);
+      res.status(500).json({ error: 'Failed to login.' });
     }
   };
 
@@ -93,27 +98,26 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const getUser = async (req: UserByUsernameRequest, res: Response): Promise<void> => {
-    // TODO: Task 1 - Implement the getUser function
-    try{
-      const username = req.params.username;
+    try {
+      const { username } = req.params;
 
-      if(!username){
-        res.status(404).json({error: "Username is required!"});
+      if (!username) {
+        res.status(404).json({ error: 'Username is required!' });
         return;
       }
 
-      const user: UserResponse = await getUserByUsername(username)
-      
-      if('error' in user){
-        console.error("getUser failed!", user.error);
+      const user: UserResponse = await getUserByUsername(username);
+
+      if ('error' in user) {
+        console.error('getUser failed!', user.error);
         res.status(500).json({ error: user.error });
         return;
       }
 
       res.status(200).json(user);
-    } catch(exception: unknown){
-      console.error("getUser Unknown exception!", exception);
-      res.status(500).json({error: "Unknown exception"});
+    } catch (exception: unknown) {
+      console.error('getUser Unknown exception!', exception);
+      res.status(500).json({ error: 'Unknown exception' });
     }
   };
 
@@ -124,29 +128,28 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const deleteUser = async (req: UserByUsernameRequest, res: Response): Promise<void> => {
-    try{
-      const username = req.params.username;
+    try {
+      const { username } = req.params;
 
-      if(!username){
-        res.status(400).json({error: "Username is required!"});
+      if (!username) {
+        res.status(400).json({ error: 'Username is required!' });
         return;
       }
 
       const userResponse = await deleteUserByUsername(username);
-      
-      if('error' in userResponse){
-        console.error("deleteUser failed", userResponse.error);
+
+      if ('error' in userResponse) {
+        console.error('deleteUser failed', userResponse.error);
         res.status(500).json({ error: userResponse.error });
         return;
       }
 
       res.status(200).json(userResponse);
-    } catch(exception: unknown){
-      console.error("deleteUser Unknown exception!", exception);
-      res.status(500).json({error: "Failed to delete user"});
+    } catch (exception: unknown) {
+      console.error('deleteUser Unknown exception!', exception);
+      res.status(500).json({ error: 'Failed to delete user' });
     }
-    // TODO: Task 1 - Implement the deleteUser function
-};
+  };
 
   /**
    * Resets a user's password.
@@ -155,37 +158,36 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const resetPassword = async (req: UserRequest, res: Response): Promise<void> => {
-    // TODO: Task 1 - Implement the resetPassword function
-    try{
+    try {
       const { username, password } = req.body;
-      if(!username || !password){
+      if (!username || !password) {
         res.status(400).send('Invalid user body');
         return;
       }
 
-      const userResponse = await updateUser(username, { password: password });
-      
-      if('error' in userResponse){
-        console.error("resetPassword failed", userResponse.error);
+      const userResponse = await updateUser(username, { password });
+
+      if ('error' in userResponse) {
+        console.error('resetPassword failed', userResponse.error);
         res.status(500).json({ error: userResponse.error });
         return;
       }
 
       res.status(200).json(userResponse);
-    } catch(exception: unknown){
-      console.error("resetPassword Unknown exception!", exception);
-      res.status(500).json({error: "Unknown exception"});
+    } catch (exception: unknown) {
+      console.error('resetPassword Unknown exception!', exception);
+      res.status(500).json({ error: 'Unknown exception' });
     }
   };
 
   // Define routes for the user-related operations.
   // TODO: Task 1 - Add appropriate HTTP verbs and endpoints to the router
 
-  router.post("/signup", createUser);
-  router.post("/login", userLogin);
+  router.post('/signup', createUser);
+  router.post('/login', userLogin);
   router.patch('/resetPassword', resetPassword);
-  router.get("/getUser/:username", getUser);
-  router.delete("/deleteUser/:username", deleteUser);
+  router.get('/getUser/:username', getUser);
+  router.delete('/deleteUser/:username', deleteUser);
   return router;
 };
 

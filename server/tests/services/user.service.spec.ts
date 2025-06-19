@@ -102,10 +102,10 @@ describe('loginUser', () => {
 
   it('should return error if password does not match', async () => {
     mockingoose(UserModel).toReturn(user, 'findOne');
-
+    const incorrectPassword = `${user.password}abcd`
     const credentials: UserCredentials = {
       username: user.username,
-      password: user.password+"abc",
+      password: incorrectPassword,
     };
 
     const errorResponse = await loginUser(credentials);

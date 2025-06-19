@@ -1,5 +1,4 @@
 import UserModel from '../models/users.model';
-import { safeUser, user } from '../tests/mockData.models';
 import { SafeUser, User, UserCredentials, UserResponse } from '../types/types';
 
 /**
@@ -8,7 +7,7 @@ import { SafeUser, User, UserCredentials, UserResponse } from '../types/types';
  * @param {User} user - The user object to be saved, containing user details like username, password, etc.
  * @returns {Promise<UserResponse>} - Resolves with the saved user object (without the password) or an error message.
  */
-export const saveUser = async (user: User): Promise<UserResponse> =>{
+export const saveUser = async (user: User): Promise<UserResponse> => {
   try {
     // Persist the object to database.
     const savedUser = await UserModel.create(user);
@@ -33,21 +32,21 @@ export const saveUser = async (user: User): Promise<UserResponse> =>{
  * @returns {Promise<UserResponse>} - Resolves with the found user object (without the password) or an error message.
  */
 export const getUserByUsername = async (username: string): Promise<UserResponse> => {
-  try{
-    const user = await UserModel.findOne({username: username});
-    
-    if(!user){
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
       return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
       _id: user._id,
       username: user.username,
-      dateJoined: user.dateJoined
+      dateJoined: user.dateJoined,
     };
 
     return safeUser;
-  } catch(exception: unknown){
+  } catch (exception: unknown) {
     console.error('getUserByUsername Unknown exception!', exception);
     return { error: 'Failed to get user' };
   }
@@ -60,31 +59,30 @@ export const getUserByUsername = async (username: string): Promise<UserResponse>
  * @returns {Promise<UserResponse>} - Resolves with the authenticated user object (without the password) or an error message.
  */
 export const loginUser = async (loginCredentials: UserCredentials): Promise<UserResponse> => {
-  try{
-    const user = await UserModel.findOne({username: loginCredentials.username});
+  try {
+    const user = await UserModel.findOne({ username: loginCredentials.username });
 
     // Validate if user with entered username exists in database.
-    if(!user){
+    if (!user) {
       return { error: 'Invalid username or password' };
     }
     // Validate if password in database matches with the credentials entered.
-    if(user.password && (user.password!=loginCredentials.password)){
+    if (user.password && (user.password !== loginCredentials.password)) {
       return { error: 'Invalid username or password' };
     }
 
     const safeUser: SafeUser = {
       _id: user._id,
       username: user.username,
-      dateJoined: user.dateJoined
+      dateJoined: user.dateJoined,
     };
 
     return safeUser;
-  } catch(exception: unknown){
-    console.error("loginUser Unknown exception!", exception);
+  } catch (exception: unknown) {
+    console.error('loginUser Unknown exception!', exception);
     return { error: 'Failed to login' };
   }
-}
-  // TODO: Task 1 - Implement the loginUser function. Refer to other service files for guidance.
+};
 
 /**
  * Deletes a user from the database by their username.
@@ -93,27 +91,25 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
  * @returns {Promise<UserResponse>} - Resolves with the deleted user object (without the password) or an error message.
  */
 export const deleteUserByUsername = async (username: string): Promise<UserResponse> => {
-  try{
-    const user = await UserModel.findOneAndDelete({username: username});
+  try {
+    const user = await UserModel.findOneAndDelete({ username });
 
-    if(!user){
+    if (!user) {
       return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
       _id: user._id,
       username: user.username,
-      dateJoined: user.dateJoined
+      dateJoined: user.dateJoined,
     };
 
     return safeUser;
-  } catch(exception: unknown){
-    console.error("deleteUserByUsername Unknown exception!", exception);
+  } catch (exception: unknown) {
+    console.error('deleteUserByUsername Unknown exception!', exception);
     return { error: 'Failed to delete user' };
   }
-}
-  // TODO: Task 1 - Implement the deleteUserByUsername function. Refer to other service files for guidance.
- 
+};
 
 /**
  * Updates user information in the database.
@@ -122,24 +118,26 @@ export const deleteUserByUsername = async (username: string): Promise<UserRespon
  * @param {Partial<User>} updates - An object containing the fields to update and their new values.
  * @returns {Promise<UserResponse>} - Resolves with the updated user object (without the password) or an error message.
  */
-export const updateUser = async (username: string, updates: Partial<User>): Promise<UserResponse> => {
-  try{
-    const user = await UserModel.findOneAndUpdate({username: username}, updates, { new: true});
+export const updateUser = async (
+  username: string,
+  updates: Partial<User>
+): Promise<UserResponse> => {
+  try {
+    const user = await UserModel.findOneAndUpdate({ username }, updates, { new: true });
 
-    if(!user){
+    if (!user) {
       return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
       _id: user._id,
       username: user.username,
-      dateJoined: user.dateJoined
+      dateJoined: user.dateJoined,
     };
-  
+
     return safeUser;
-  } catch(exception: unknown){
-    console.error("updateUser Unknown exception!", exception);
+  } catch (exception: unknown) {
+    console.error('updateUser Unknown exception!', exception);
     return { error: 'Failed to update user details' };
   }
-  // TODO: Task 1 - Implement the updateUser function. Refer to other service files for guidance.
-}
+};

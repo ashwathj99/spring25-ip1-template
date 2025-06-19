@@ -36,32 +36,31 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addMessageRoute = async (req: AddMessageRequest, res: Response): Promise<void> => {
-    try{
-      
+    try {
       const { messageToAdd } = req.body;
 
-      if(!messageToAdd || !messageToAdd.msg || !messageToAdd.msgFrom){
+      if (!messageToAdd || !messageToAdd.msg || !messageToAdd.msgFrom) {
         res.status(400).send('Invalid request');
         return;
       }
-      
+
       const message: Message = {
         ...messageToAdd,
-        msgDateTime: new Date()
-      }
+        msgDateTime: new Date(),
+      };
 
       const messageResponse = await saveMessage(message);
 
-      if('error' in messageResponse){
-        res.status(500).json({error: messageResponse.error});
+      if ('error' in messageResponse) {
+        res.status(500).json({ error: messageResponse.error });
         return;
       }
 
       socket.emit('messageUpdate', { msg: messageResponse });
       res.status(200).json(messageResponse);
-    } catch(exception: unknown){
+    } catch (exception: unknown) {
       console.error('addMessageRoute Unknown exception!', exception);
-      res.status(500).json({error: 'Failed to send message'});
+      res.status(500).json({ error: 'Failed to send message' });
     }
   };
 
@@ -72,11 +71,11 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const getMessagesRoute = async (req: Request, res: Response): Promise<void> => {
-    try{
+    try {
       const messages = await getMessages();
 
       res.status(200).json(messages);
-    } catch(exception: unknown){
+    } catch (exception: unknown) {
       console.error('getMessagesRoute Unknown exception!', exception);
       res.status(500).json([]);
     }

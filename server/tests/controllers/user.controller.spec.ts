@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import { app } from '../../app';
 import * as util from '../../services/user.service';
 import { SafeUser, User, UserResponse } from '../../types/types';
-import { user } from '../mockData.models';
 
 const mockUser: User = {
   _id: new mongoose.Types.ObjectId(),
@@ -25,23 +24,23 @@ const mockFailedToGetUserMessage = 'Failed to get user';
 const mockFailedToDeleteUserMessage = 'Failed to delete user';
 
 const mockDBErrorResponse: UserResponse = {
-  error: mockDBErrorMessage
+  error: mockDBErrorMessage,
 }
 
 const mockFailedToLoginResponse: UserResponse = {
-  error: mockFailedToLoginMessage
+  error: mockFailedToLoginMessage,
 };
 
 const mockUpdateUserFailedResponse: UserResponse = {
-  error: mockUpdateUserFailedMessage
+  error: mockUpdateUserFailedMessage,
 }
 
 const mockFailedToGetUserResponse: UserResponse = {
-  error: mockFailedToGetUserMessage
+  error: mockFailedToGetUserMessage,
 }
 
 const mockFailedToDeleteUserResponse: UserResponse = {
-  error: mockFailedToDeleteUserMessage
+  error: mockFailedToDeleteUserMessage,
 }
 
 const mockUserJSONResponse = {
