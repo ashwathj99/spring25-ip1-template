@@ -36,13 +36,33 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addMessageRoute = async (req: AddMessageRequest, res: Response): Promise<void> => {
-    /**
-     * TODO: Task 2 - Implement the addMessageRoute function.
-     * Note: you will need to uncomment the line below. Refer to other controller files for guidance.
-     * This emits a message update event to the client. When should you emit this event? You can find the socket event definition in the server/types/socket.d.ts file.
-     */
-    // socket.emit('messageUpdate', { msg: msgFromDb });
-    res.status(501).send('Not implemented');
+    try{
+      
+      const { messageToAdd } = req.body;
+
+      if(!messageToAdd.msg || !messageToAdd.msgFrom){
+        res.status(400).json({error: 'Message content and sender are required'});
+        return;
+      }
+      
+      const message: Message = {
+        ...messageToAdd,
+        msgDateTime: new Date()
+      }
+
+      const messageResponse = await saveMessage(message);
+
+      if('error' in messageResponse){
+        res.status(500).json({error: messageResponse.error});
+        return;
+      }
+
+      socket.emit('messageUpdate', { msg: messageResponse });
+      res.status(201).json(messageResponse);
+    } catch(exception: unknown){
+      console.error('addMessageRoute Unknown exception!', exception);
+      res.status(500).json({error: 'Failed to send message'});
+    }
   };
 
   /**
@@ -52,8 +72,14 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const getMessagesRoute = async (req: Request, res: Response): Promise<void> => {
-    // TODO: Task 2 - Implement the getMessagesRoute function
-    res.status(501).send('Not implemented');
+    try{
+      const messages = await getMessages();
+
+      res.status(200).json(messages);
+    } catch(exception: unknown){
+      console.error('getMessagesRoute Unknown exception!', exception);
+      res.status(500).json([]);
+    }
   };
 
   // Add appropriate HTTP verbs and their endpoints to the router

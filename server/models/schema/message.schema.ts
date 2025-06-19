@@ -11,6 +11,20 @@ import { Schema } from 'mongoose';
  */
 const messageSchema: Schema = new Schema(
   // TODO: Task 2 - Define the schema for a message
+  {
+    msg: {
+      type: String,
+      required: true,
+    },
+    msgFrom: {
+      type: String,
+      required: true,
+    },
+    msgDateTime: {
+      type: Date,
+      required: true,
+    }
+  },
   { collection: 'Message' },
 );
 
