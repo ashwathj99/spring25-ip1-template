@@ -14,15 +14,15 @@ const userSchema: Schema = new Schema(
   {
     username: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     dateJoined: {
       type: Date,
-      required: true
+      required: true,
     }
   },
   { collection: 'User' },
