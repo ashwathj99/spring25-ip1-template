@@ -40,8 +40,8 @@ const messageController = (socket: FakeSOSocket) => {
       
       const { messageToAdd } = req.body;
 
-      if(!messageToAdd.msg || !messageToAdd.msgFrom){
-        res.status(400).json({error: 'Message content and sender are required'});
+      if(!messageToAdd || !messageToAdd.msg || !messageToAdd.msgFrom){
+        res.status(400).send('Invalid request');
         return;
       }
       
@@ -58,7 +58,7 @@ const messageController = (socket: FakeSOSocket) => {
       }
 
       socket.emit('messageUpdate', { msg: messageResponse });
-      res.status(201).json(messageResponse);
+      res.status(200).json(messageResponse);
     } catch(exception: unknown){
       console.error('addMessageRoute Unknown exception!', exception);
       res.status(500).json({error: 'Failed to send message'});

@@ -10,11 +10,8 @@ import { Message, MessageResponse } from '../types/types';
  */
 export const saveMessage = async (message: Message): Promise<MessageResponse> => {
   try{
-    // Create a model that represents a message in mongo db.
-    const messageModel = new MessageModel(message);
-
     // Persist the object to database.
-    const savedMessage = await messageModel.save();
+    const savedMessage = await MessageModel.create(message);
 
     //TODO: verify if return type matches.
     return savedMessage;
@@ -32,11 +29,10 @@ export const saveMessage = async (message: Message): Promise<MessageResponse> =>
  */
 export const getMessages = async (): Promise<Message[]> => {
   try{
-    const messages = await MessageModel.find()
-    .sort({ msgDateTime: 1 })
-    .lean();
+    const messages = await MessageModel.find();
 
-    return messages;
+    return messages.sort((a, b) => new Date(a.msgDateTime).getTime() - new Date(b.msgDateTime).getTime());
+    // return messages;
   } catch(exception: unknown){
     console.error('getMessages Unknown exception!', exception);
     return [];

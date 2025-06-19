@@ -31,7 +31,7 @@ const userController = () => {
       const { username, password } = req.body;
 
       if(!username || !password){
-        res.status(400).json({ error: "Username and password are required!" });
+        res.status(400).send('Invalid user body');
         return;
       }
 
@@ -45,11 +45,11 @@ const userController = () => {
     
     if('error' in userResponse){
       console.error("createUser Failed to create user.", userResponse.error)
-      res.status(500).json({error: userResponse.error});
+      res.status(500).json({ error: userResponse.error });
       return;
     }
 
-    res.status(201).json(userResponse);
+    res.status(200).json(userResponse);
   } catch(exception: unknown){
       console.error("createUser Unknown exception!", exception);
       res.status(500).json({error: "Failed to create user."});
@@ -67,7 +67,7 @@ const userController = () => {
       const { username, password } = req.body;
 
       if(!username || !password){
-        res.status(400).json({error: "Username and password are required!"});
+        res.status(400).send('Invalid user body');
         return;
       }
 
@@ -98,14 +98,15 @@ const userController = () => {
       const username = req.params.username;
 
       if(!username){
-        res.status(400).json({error: "Username is required!"});
+        res.status(404).json({error: "Username is required!"});
         return;
       }
 
       const user: UserResponse = await getUserByUsername(username)
       
       if('error' in user){
-        res.status(404).json({ error: user.error });
+        console.error("getUser failed!", user.error);
+        res.status(500).json({ error: user.error });
         return;
       }
 
@@ -134,7 +135,8 @@ const userController = () => {
       const userResponse = await deleteUserByUsername(username);
       
       if('error' in userResponse){
-        res.status(400).json(userResponse.error);
+        console.error("deleteUser failed", userResponse.error);
+        res.status(500).json({ error: userResponse.error });
         return;
       }
 
@@ -157,14 +159,15 @@ const userController = () => {
     try{
       const { username, password } = req.body;
       if(!username || !password){
-        res.status(400).json({error: "Username and new password are required!"});
+        res.status(400).send('Invalid user body');
         return;
       }
 
       const userResponse = await updateUser(username, { password: password });
       
       if('error' in userResponse){
-        res.status(404).json({error: userResponse.error});
+        console.error("resetPassword failed", userResponse.error);
+        res.status(500).json({ error: userResponse.error });
         return;
       }
 
@@ -178,11 +181,11 @@ const userController = () => {
   // Define routes for the user-related operations.
   // TODO: Task 1 - Add appropriate HTTP verbs and endpoints to the router
 
-  router.post("/users/signup", createUser);
-  router.post("/users/login", loginUser);
-  router.patch('/users/reset-password', resetPassword);
-  router.get("/users/getUser/:username", getUser);
-  router.delete("/users/deleteUser/:username", deleteUser);
+  router.post("/signup", createUser);
+  router.post("/login", userLogin);
+  router.patch('/resetPassword', resetPassword);
+  router.get("/getUser/:username", getUser);
+  router.delete("/deleteUser/:username", deleteUser);
   return router;
 };
 

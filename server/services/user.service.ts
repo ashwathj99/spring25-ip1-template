@@ -10,12 +10,8 @@ import { SafeUser, User, UserCredentials, UserResponse } from '../types/types';
  */
 export const saveUser = async (user: User): Promise<UserResponse> =>{
   try {
-
-    // Create a model that represents the user in mongo db.
-    const newUser = new UserModel(user);
-
     // Persist the object to database.
-    const savedUser = await newUser.save();
+    const savedUser = await UserModel.create(user);
 
     const safeUser: SafeUser = {
       _id: savedUser._id,
@@ -38,13 +34,13 @@ export const saveUser = async (user: User): Promise<UserResponse> =>{
  */
 export const getUserByUsername = async (username: string): Promise<UserResponse> => {
   try{
-    const user = await UserModel.findOne({username: username}).exec();
+    const user = await UserModel.findOne({username: username});
     
     if(!user){
       return { error: 'User not found' };
     }
 
-    const _safeUser: SafeUser = {
+    const safeUser: SafeUser = {
       _id: user._id,
       username: user.username,
       dateJoined: user.dateJoined
@@ -55,7 +51,7 @@ export const getUserByUsername = async (username: string): Promise<UserResponse>
     console.error('getUserByUsername Unknown exception!', exception);
     return { error: 'Failed to get user' };
   }
-}
+};
 
 /**
  * Authenticates a user by verifying their username and password.
@@ -65,17 +61,19 @@ export const getUserByUsername = async (username: string): Promise<UserResponse>
  */
 export const loginUser = async (loginCredentials: UserCredentials): Promise<UserResponse> => {
   try{
-    const user = await UserModel.findOne({username: loginCredentials.username}).exec();
+    const user = await UserModel.findOne({username: loginCredentials.username});
 
+    // Validate if user with entered username exists in database.
     if(!user){
       return { error: 'Invalid username or password' };
     }
-    if(user.password!=loginCredentials.password){
+    // Validate if password in database matches with the credentials entered.
+    if(user.password && (user.password!=loginCredentials.password)){
       return { error: 'Invalid username or password' };
     }
 
     const safeUser: SafeUser = {
-      _id: user.id,
+      _id: user._id,
       username: user.username,
       dateJoined: user.dateJoined
     };
@@ -96,14 +94,14 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
  */
 export const deleteUserByUsername = async (username: string): Promise<UserResponse> => {
   try{
-    const user = await UserModel.findOneAndDelete({username: username}).exec();
+    const user = await UserModel.findOneAndDelete({username: username});
 
     if(!user){
-      return {error: 'User not found'};
+      return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
-      _id: user.id,
+      _id: user._id,
       username: user.username,
       dateJoined: user.dateJoined
     };
@@ -126,14 +124,14 @@ export const deleteUserByUsername = async (username: string): Promise<UserRespon
  */
 export const updateUser = async (username: string, updates: Partial<User>): Promise<UserResponse> => {
   try{
-    const user = await UserModel.findOneAndUpdate({username: username}, updates, { new: true}).exec();
+    const user = await UserModel.findOneAndUpdate({username: username}, updates, { new: true});
 
     if(!user){
-      return {error: 'User not found'};
+      return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
-      _id: user.id,
+      _id: user._id,
       username: user.username,
       dateJoined: user.dateJoined
     };

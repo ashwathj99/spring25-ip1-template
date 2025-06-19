@@ -36,9 +36,7 @@ export interface UserRequest extends Request {
   body: {
     username: string;
     password: string;
-    // [key: string]: any;
   }
-
 }
 
 /**
@@ -50,7 +48,6 @@ export interface UserByUsernameRequest extends Request {
   // TODO: Task 1 - Define the properties of the UserByUsernameRequest interface
   params: {
     username: string,
-    // [key: string]: string;
   }
 }
 
