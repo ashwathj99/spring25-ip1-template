@@ -2,7 +2,8 @@ import supertest from 'supertest';
 import mongoose from 'mongoose';
 import { app } from '../../app';
 import * as util from '../../services/user.service';
-import { SafeUser, User } from '../../types/types';
+import { SafeUser, User, UserResponse } from '../../types/types';
+import { user } from '../mockData.models';
 
 const mockUser: User = {
   _id: new mongoose.Types.ObjectId(),
@@ -17,6 +18,32 @@ const mockSafeUser: SafeUser = {
   dateJoined: new Date('2024-12-03'),
 };
 
+const mockDBErrorMessage = 'Failed to save user';
+const mockFailedToLoginMessage = 'Failed to login';
+const mockUpdateUserFailedMessage = 'Failed to update user details';
+const mockFailedToGetUserMessage = 'Failed to get user';
+const mockFailedToDeleteUserMessage = 'Failed to delete user';
+
+const mockDBErrorResponse: UserResponse = {
+  error: mockDBErrorMessage
+}
+
+const mockFailedToLoginResponse: UserResponse = {
+  error: mockFailedToLoginMessage
+};
+
+const mockUpdateUserFailedResponse: UserResponse = {
+  error: mockUpdateUserFailedMessage
+}
+
+const mockFailedToGetUserResponse: UserResponse = {
+  error: mockFailedToGetUserMessage
+}
+
+const mockFailedToDeleteUserResponse: UserResponse = {
+  error: mockFailedToDeleteUserMessage
+}
+
 const mockUserJSONResponse = {
   _id: mockUser._id?.toString(),
   username: 'user1',
@@ -30,6 +57,9 @@ const getUserByUsernameSpy = jest.spyOn(util, 'getUserByUsername');
 const deleteUserByUsernameSpy = jest.spyOn(util, 'deleteUserByUsername');
 
 describe('Test userController', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   describe('POST /signup', () => {
     it('should create a new user given correct arguments', async () => {
       const mockReqBody = {
@@ -57,7 +87,35 @@ describe('Test userController', () => {
       expect(response.text).toEqual('Invalid user body');
     });
 
-    // TODO: Task 1 - Write additional test cases for signupRoute
+    it('should return 400 for request missing password', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+      };
+
+      const response = await supertest(app).post('/user/signup').send(mockReqBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toEqual('Invalid user body');
+    });
+
+    it('should return 500 for error response from service', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        password: mockUser.password,
+      };
+
+      // Mock save user to return error response.
+      saveUserSpy.mockResolvedValueOnce(mockDBErrorResponse);
+
+      const errorResponse = await supertest(app).post('/user/signup').send(mockReqBody);
+
+      expect(errorResponse.status).toBe(500);
+      expect(errorResponse.body).toEqual(mockDBErrorResponse);
+      expect(saveUserSpy).toHaveBeenCalledWith({ ...mockReqBody, dateJoined: expect.any(Date) });
+    });
+
+    //exception case
+
   });
 
   describe('POST /login', () => {
@@ -87,7 +145,38 @@ describe('Test userController', () => {
       expect(response.text).toEqual('Invalid user body');
     });
 
-    // TODO: Task 1 - Write additional test cases for loginRoute
+    it('should return 400 for request missing password', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+      };
+
+      const response = await supertest(app).post('/user/login').send(mockReqBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toEqual('Invalid user body');
+    });
+
+  it('should return 401 for error response from service', async () => {
+    const mockReqBody = {
+      username: mockUser.username,
+      password: mockUser.password,
+    };
+
+    // Mock loginUser to return an error response.
+    loginUserSpy.mockResolvedValueOnce(mockFailedToLoginResponse);
+
+    const response = await supertest(app).post('/user/login').send(mockReqBody);
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual(mockFailedToLoginResponse);
+    expect(loginUserSpy).toHaveBeenCalledWith({ 
+      username: mockUser.username, 
+      password: mockUser.password 
+    });
+  });
+  
+  // exception case
+
   });
 
   describe('PATCH /resetPassword', () => {
@@ -117,7 +206,35 @@ describe('Test userController', () => {
       expect(response.text).toEqual('Invalid user body');
     });
 
-    // TODO: Task 1 - Write additional test cases for resetPasswordRoute
+    it('should return 400 for request missing password', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+      };
+
+      const response = await supertest(app).patch('/user/resetPassword').send(mockReqBody);
+
+      expect(response.status).toBe(400);
+      expect(response.text).toEqual('Invalid user body');
+    });
+
+    it('should return 500 for error response from service', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        password: mockUser.password,
+      };
+
+      // Mock updateUser to return an error response.
+      updatedUserSpy.mockResolvedValueOnce(mockUpdateUserFailedResponse);
+
+      const response = await supertest(app).patch('/user/resetPassword').send(mockReqBody);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual(mockUpdateUserFailedResponse);
+      expect(updatedUserSpy).toHaveBeenCalledWith(mockUser.username, { password: mockUser.password });
+    });
+
+    //exception case
+
   });
 
   describe('GET /getUser', () => {
@@ -138,7 +255,16 @@ describe('Test userController', () => {
       expect(response.status).toBe(404);
     });
 
-    // TODO: Task 1 - Write additional test cases for getUserRoute
+    it('should return 500 if service threw an error', async () => {
+      getUserByUsernameSpy.mockResolvedValueOnce(mockFailedToGetUserResponse);
+
+      const response = await supertest(app).get(`/user/getUser/${mockUser.username}`);
+      
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual(mockFailedToGetUserResponse);
+      expect(getUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
+    });
+
   });
 
   describe('DELETE /deleteUser', () => {
@@ -159,6 +285,15 @@ describe('Test userController', () => {
       expect(response.status).toBe(404);
     });
 
-    // TODO: Task 1 - Write additional test cases for deleteUserRoute
+    it('delete user should return 500 if the service threw an error response', async () => {
+      deleteUserByUsernameSpy.mockResolvedValueOnce(mockFailedToDeleteUserResponse);
+
+      const response = await supertest(app).delete(`/user/deleteUser/${mockUser.username}`);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({ error: mockFailedToDeleteUserMessage });
+      expect(deleteUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
+    });
+
   });
 });

@@ -32,7 +32,14 @@ describe('User model', () => {
       expect(savedUser.dateJoined).toEqual(user.dateJoined);
     });
 
-    // TODO: Task 1 - Write additional test cases for saveUser
+  // TODO: exception case
+  // it('should return error when database create fails', async () => {
+  //   mockingoose(UserModel).toReturn(Promise.reject(new Error('Database error')), 'create');
+
+  //   const result = await saveUser(user);
+
+  //   expect(result).toEqual({ error: 'Failed to save user' });
+  // });
   });
 });
 
@@ -50,7 +57,15 @@ describe('getUserByUsername', () => {
     expect(retrievedUser.dateJoined).toEqual(user.dateJoined);
   });
 
-  // TODO: Task 1 - Write additional test cases for getUserByUsername
+  it('should return error if no user is found', async () => {
+    mockingoose(UserModel).toReturn(null, 'findOne');
+
+    const retrievedUser = await getUserByUsername(user.username);
+
+    expect(retrievedUser).toEqual({ error: 'User not found' });
+  });
+
+  // exception case
 });
 
 describe('loginUser', () => {
@@ -72,7 +87,33 @@ describe('loginUser', () => {
     expect(loggedInUser.dateJoined).toEqual(user.dateJoined);
   });
 
-  // TODO: Task 1 - Write additional test cases for loginUser
+  it('should return error if username does not exist', async () => {
+    mockingoose(UserModel).toReturn(null, 'findOne');
+
+    const credentials: UserCredentials = {
+      username: user.username,
+      password: user.password,
+    };
+
+    const errorResponse = await loginUser(credentials);
+
+    expect(errorResponse).toEqual({ error: 'Invalid username or password' });
+  });
+
+  it('should return error if password does not match', async () => {
+    mockingoose(UserModel).toReturn(user, 'findOne');
+
+    const credentials: UserCredentials = {
+      username: user.username,
+      password: user.password+"abc",
+    };
+
+    const errorResponse = await loginUser(credentials);
+
+    expect(errorResponse).toEqual({ error: 'Invalid username or password' });
+  });
+
+  //exception case
 });
 
 describe('deleteUserByUsername', () => {
@@ -89,7 +130,15 @@ describe('deleteUserByUsername', () => {
     expect(deletedUser.dateJoined).toEqual(user.dateJoined);
   });
 
-  // TODO: Task 1 - Write additional test cases for deleteUserByUsername
+  it('should return error if user does not exist', async () => {
+    mockingoose(UserModel).toReturn(null, 'findOneAndDelete');
+
+    const errorResponse = await deleteUserByUsername(user.username);
+
+    expect(errorResponse).toEqual({ error: 'User not found' });
+  });
+
+  //exception case
 });
 
 describe('updateUser', () => {
@@ -122,5 +171,11 @@ describe('updateUser', () => {
     expect(result.dateJoined).toEqual(updatedUser.dateJoined);
   });
 
-  // TODO: Task 1 - Write additional test cases for updateUser
+  it('should return error if user does not exist', async () => {
+    mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+    const errorResponse = await updateUser(user.username, updates);
+
+    expect(errorResponse).toEqual( { error: 'User not found' });
+  });
 });
