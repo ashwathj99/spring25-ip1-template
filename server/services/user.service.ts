@@ -11,10 +11,10 @@ import { SafeUser, User, UserCredentials, UserResponse } from '../types/types';
 export const saveUser = async (user: User): Promise<UserResponse> =>{
   try {
 
-    // Create a model that represents our model in mongo db.
+    // Create a model that represents the user in mongo db.
     const newUser = new UserModel(user);
 
-    //Persist the object to database.
+    // Persist the object to database.
     const savedUser = await newUser.save();
 
     const safeUser: SafeUser = {
@@ -24,9 +24,9 @@ export const saveUser = async (user: User): Promise<UserResponse> =>{
     };
 
     return safeUser;
-  } catch (error: any) {
-    console.error('Error saving user:'+user, error);
-    return { error: error.message || 'Failed to save user' };
+  } catch (exception: unknown) {
+    console.error('saveUser Failed to save user', exception);
+    return { error: 'Failed to save user' };
   }
 };
 

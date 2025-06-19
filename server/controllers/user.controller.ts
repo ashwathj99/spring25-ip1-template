@@ -29,6 +29,12 @@ const userController = () => {
     // TODO: Task 1 - Implement the createUser function
      try {
       const { username, password } = req.body;
+
+      if(!username || !password){
+        res.status(400).json({ error: "Username and password are required!" });
+        return;
+      }
+
       const newUser: User = {
       username,
       password,
@@ -59,6 +65,12 @@ const userController = () => {
     // TODO: Task 1 - Implement the userLogin function
     try{
       const { username, password } = req.body;
+
+      if(!username || !password){
+        res.status(400).json({error: "Username and password are required!"});
+        return;
+      }
+
       const credentials: UserCredentials = { username: username, password: password};
       const user = await loginUser(credentials);
       
@@ -84,6 +96,12 @@ const userController = () => {
     // TODO: Task 1 - Implement the getUser function
     try{
       const username = req.params.username;
+
+      if(!username){
+        res.status(400).json({error: "Username is required!"});
+        return;
+      }
+
       const user: UserResponse = await getUserByUsername(username)
       
       if('error' in user){
@@ -106,7 +124,14 @@ const userController = () => {
    */
   const deleteUser = async (req: UserByUsernameRequest, res: Response): Promise<void> => {
     try{
-      const userResponse = await deleteUserByUsername(req.params.username);
+      const username = req.params.username;
+
+      if(!username){
+        res.status(400).json({error: "Username is required!"});
+        return;
+      }
+
+      const userResponse = await deleteUserByUsername(username);
       
       if('error' in userResponse){
         res.status(400).json(userResponse.error);
