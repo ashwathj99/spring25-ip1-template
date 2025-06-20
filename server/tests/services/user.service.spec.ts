@@ -32,6 +32,15 @@ describe('User model', () => {
       expect(savedUser.dateJoined).toEqual(user.dateJoined);
     });
 
+  it('should return error when an exception is thrown', async () => {
+    jest.spyOn(UserModel, 'create').mockImplementationOnce(() => {
+      throw new Error('Database error');
+    });
+    const result = await saveUser(user);
+    expect(result).toEqual({ error: 'Failed to save user' });
+    (UserModel.create as jest.Mock).mockRestore?.();
+  });
+
   it('should return error when database create fails', async () => {
     mockingoose(UserModel).toReturn(new Error('Database error'), 'create');
     const result = await saveUser(user) as {error: string};
@@ -69,6 +78,13 @@ describe('getUserByUsername', () => {
     UserModel.findOne(user).catch((error: Error) => {
       expect(error.message).toEqual('Database error');
     });
+  });
+
+  it('should return error when an exception is thrown in getUserByUsername', async () => {
+    jest.spyOn(UserModel, 'findOne').mockImplementationOnce(() => { throw new Error('Database error'); });
+    const result = await getUserByUsername('username');
+    expect(result).toEqual({ error: 'Failed to get user' });
+    (UserModel.findOne as jest.Mock).mockRestore?.();
   });
 });
 
@@ -117,7 +133,12 @@ describe('loginUser', () => {
     expect(errorResponse).toEqual({ error: 'Invalid username or password' });
   });
 
-  //exception case
+  it('should return error when an exception is thrown in loginUser', async () => {
+    jest.spyOn(UserModel, 'findOne').mockImplementationOnce(() => { throw new Error('Database error'); });
+    const result = await loginUser({ username: 'username', password: 'pass' });
+    expect(result).toEqual({ error: 'Failed to login' });
+    (UserModel.findOne as jest.Mock).mockRestore?.();
+});
 });
 
 describe('deleteUserByUsername', () => {
@@ -142,7 +163,12 @@ describe('deleteUserByUsername', () => {
     expect(errorResponse).toEqual({ error: 'User not found' });
   });
 
-  //exception case
+  it('should return error when an exception is thrown in deleteUserByUsername', async () => {
+    jest.spyOn(UserModel, 'findOneAndDelete').mockImplementationOnce(() => { throw new Error('Database error'); });
+    const result = await deleteUserByUsername('username');
+    expect(result).toEqual({ error: 'Failed to delete user' });
+    (UserModel.findOneAndDelete as jest.Mock).mockRestore?.();
+  });
 });
 
 describe('updateUser', () => {
@@ -182,5 +208,14 @@ describe('updateUser', () => {
 
     expect(errorResponse).toEqual( { error: 'User not found' });
   });
-});
+
+  it('should return error when an exception is thrown in updateUser', async () => {
+    jest.spyOn(UserModel, 'findOneAndUpdate').mockImplementationOnce(() => { throw new Error('Database error'); });
+
+    const result = await updateUser('username', { password: 'new' });
+
+    expect(result).toEqual({ error: 'Failed to update user details' });
+    (UserModel.findOneAndUpdate as jest.Mock).mockRestore?.();
+  });
+})
 });
