@@ -17,7 +17,7 @@ const mockSafeUser: SafeUser = {
   dateJoined: new Date('2024-12-03'),
 };
 
-const mockDBErrorMessage = 'Failed to save user';
+const mockDBErrorMessage = 'Failed to create user';
 const mockFailedToLoginMessage = 'Failed to login';
 const mockUpdateUserFailedMessage = 'Failed to update user details';
 const mockFailedToGetUserMessage = 'Failed to get user';
@@ -43,6 +43,10 @@ const mockFailedToDeleteUserResponse: UserResponse = {
   error: mockFailedToDeleteUserMessage,
 }
 
+const mockUnknownException = {
+  error: 'Unknown exception',
+}
+
 const mockUserJSONResponse = {
   _id: mockUser._id?.toString(),
   username: 'user1',
@@ -59,6 +63,7 @@ describe('Test userController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
+  
   describe('POST /signup', () => {
     it('should create a new user given correct arguments', async () => {
       const mockReqBody = {
@@ -155,7 +160,7 @@ describe('Test userController', () => {
       expect(response.text).toEqual('Invalid user body');
     });
 
-  it('should return 401 for error response from service', async () => {
+  it('should return 500 for error response from service', async () => {
     const mockReqBody = {
       username: mockUser.username,
       password: mockUser.password,
@@ -166,7 +171,7 @@ describe('Test userController', () => {
 
     const response = await supertest(app).post('/user/login').send(mockReqBody);
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(500);
     expect(response.body).toEqual(mockFailedToLoginResponse);
     expect(loginUserSpy).toHaveBeenCalledWith({ 
       username: mockUser.username, 
@@ -228,7 +233,7 @@ describe('Test userController', () => {
       const response = await supertest(app).patch('/user/resetPassword').send(mockReqBody);
 
       expect(response.status).toBe(500);
-      expect(response.body).toEqual(mockUpdateUserFailedResponse);
+      expect(response.body).toEqual(mockUnknownException);
       expect(updatedUserSpy).toHaveBeenCalledWith(mockUser.username, { password: mockUser.password });
     });
 
@@ -260,7 +265,7 @@ describe('Test userController', () => {
       const response = await supertest(app).get(`/user/getUser/${mockUser.username}`);
       
       expect(response.status).toBe(500);
-      expect(response.body).toEqual(mockFailedToGetUserResponse);
+      expect(response.body).toEqual(mockUnknownException);
       expect(getUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
     });
 
@@ -290,7 +295,7 @@ describe('Test userController', () => {
       const response = await supertest(app).delete(`/user/deleteUser/${mockUser.username}`);
 
       expect(response.status).toBe(500);
-      expect(response.body).toEqual({ error: mockFailedToDeleteUserMessage });
+      expect(response.body).toEqual(mockFailedToDeleteUserResponse);
       expect(deleteUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
     });
 

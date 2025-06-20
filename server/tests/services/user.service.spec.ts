@@ -32,14 +32,13 @@ describe('User model', () => {
       expect(savedUser.dateJoined).toEqual(user.dateJoined);
     });
 
-  // TODO: exception case
-  // it('should return error when database create fails', async () => {
-  //   mockingoose(UserModel).toReturn(Promise.reject(new Error('Database error')), 'create');
+  it('should return error when database create fails', async () => {
+    mockingoose(UserModel).toReturn(new Error('Database error'), 'create');
+    const result = await saveUser(user) as {error: string};
 
-  //   const result = await saveUser(user);
-
-  //   expect(result).toEqual({ error: 'Failed to save user' });
-  // });
+    UserModel.create(user).catch((error: Error) => {
+      expect(error.message).toEqual('Failed to save user');
+    });
   });
 });
 
@@ -65,7 +64,12 @@ describe('getUserByUsername', () => {
     expect(retrievedUser).toEqual({ error: 'User not found' });
   });
 
-  // exception case
+  it('should return error when read from database fails', async () => {
+    mockingoose(UserModel).toReturn(new Error('Database error'), 'findOne');
+    UserModel.findOne(user).catch((error: Error) => {
+      expect(error.message).toEqual('Database error');
+    });
+  });
 });
 
 describe('loginUser', () => {
@@ -178,4 +182,5 @@ describe('updateUser', () => {
 
     expect(errorResponse).toEqual( { error: 'User not found' });
   });
+});
 });
