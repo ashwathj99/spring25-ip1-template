@@ -22,8 +22,13 @@ const userController = () => {
    * @param req The incoming request containing user data.
    * @returns `true` if the body contains valid user fields; otherwise, `false`.
    */
-  const isUserBodyValid = (req: UserRequest): boolean => false;
-  // TODO: Task 1 - Implement the isUserBodyValid function
+  const isUserBodyValid = (req: UserRequest): boolean => {
+    return req.body !== undefined &&
+    req.body.username !== undefined &&
+    req.body.username !== '' &&
+    req.body.password !== undefined &&
+    req.body.password !== '';
+  }
 
   /**
    * Handles the creation of a new user account.
@@ -32,32 +37,28 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const createUser = async (req: UserRequest, res: Response): Promise<void> => {
-    try {
-      const { username, password } = req.body;
-
-      if (!username || !password) {
+    if(!isUserBodyValid(req)){
         res.status(400).send('Invalid user body');
         return;
+    }
+
+    const newUser: User = {
+      ...req.body,
+      dateJoined: new Date(),
+    };
+
+    try {
+      const result: UserResponse = await saveUser(newUser);
+
+      if ('error' in result) {
+        console.error('createUser Failed to create user', result.error);
+        throw new Error(result.error);
       }
 
-      const newUser: User = {
-        username,
-        password,
-        dateJoined: new Date(), // Set the dateJoined as the current date
-      };
-
-      const userResponse: UserResponse = await saveUser(newUser);
-
-      if ('error' in userResponse) {
-        console.error('createUser Failed to create user', userResponse.error);
-        res.status(500).json({ error: userResponse.error });
-        return;
-      }
-
-      res.status(200).json(userResponse);
-    } catch (exception: Error) {
+      res.status(200).json(result);
+    } catch (exception: unknown) {
       console.error('createUser Unknown exception!', exception);
-      res.status(500).json({ error: 'Failed to create user.' });
+      res.status(500).json({ error: 'Failed to create user' });
     }
   };
 
@@ -69,25 +70,26 @@ const userController = () => {
    */
   const userLogin = async (req: UserRequest, res: Response): Promise<void> => {
     try {
-      const { username, password } = req.body;
-
-      if (!username || !password) {
-        res.status(400).send('Invalid user body');
-        return;
+      if(!isUserBodyValid(req)){
+          res.status(400).send('Invalid user body');
+          return;
       }
 
-      const credentials: UserCredentials = { username, password };
-      const user = await loginUser(credentials);
+      const loginCredentials: UserCredentials = {
+        username: req.body.username,
+        password: req.body.password,
+      };
+
+      const user = await loginUser(loginCredentials);
 
       if ('error' in user) {
-        res.status(401).json({ error: user.error });
-        return;
+        throw new Error(user.error);
       }
 
       res.status(200).json(user);
     } catch (exception: unknown) {
       console.error('userLogin Unknown exception!', exception);
-      res.status(500).json({ error: 'Failed to login.' });
+      res.status(500).json({ error: 'Failed to login' });
     }
   };
 
@@ -102,16 +104,14 @@ const userController = () => {
       const { username } = req.params;
 
       if (!username) {
-        res.status(404).json({ error: 'Username is required!' });
+        res.status(400).json({ error: 'Username is required!' });
         return;
       }
 
       const user: UserResponse = await getUserByUsername(username);
 
       if ('error' in user) {
-        console.error('getUser failed!', user.error);
-        res.status(500).json({ error: user.error });
-        return;
+        throw new Error(user.error);
       }
 
       res.status(200).json(user);
@@ -139,9 +139,7 @@ const userController = () => {
       const userResponse = await deleteUserByUsername(username);
 
       if ('error' in userResponse) {
-        console.error('deleteUser failed', userResponse.error);
-        res.status(500).json({ error: userResponse.error });
-        return;
+        throw new Error(userResponse.error);
       }
 
       res.status(200).json(userResponse);
@@ -159,21 +157,18 @@ const userController = () => {
    */
   const resetPassword = async (req: UserRequest, res: Response): Promise<void> => {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) {
+      if (!isUserBodyValid(req)) {
         res.status(400).send('Invalid user body');
         return;
       }
 
-      const userResponse = await updateUser(username, { password });
+      const updatedUser = await updateUser(req.body.username, { password: req.body.password });
 
-      if ('error' in userResponse) {
-        console.error('resetPassword failed', userResponse.error);
-        res.status(500).json({ error: userResponse.error });
-        return;
+      if ('error' in updatedUser) {
+        throw new Error(updatedUser.error);
       }
 
-      res.status(200).json(userResponse);
+      res.status(200).json(updatedUser);
     } catch (exception: unknown) {
       console.error('resetPassword Unknown exception!', exception);
       res.status(500).json({ error: 'Unknown exception' });

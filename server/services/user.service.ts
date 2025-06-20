@@ -12,6 +12,10 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
     // Persist the object to database.
     const savedUser = await UserModel.create(user);
 
+    if(!savedUser){
+      return { error: 'Failed to save user' };
+    }
+
     const safeUser: SafeUser = {
       _id: savedUser._id,
       username: savedUser.username,
@@ -62,12 +66,8 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
   try {
     const user = await UserModel.findOne({ username: loginCredentials.username });
 
-    // Validate if user with entered username exists in database.
-    if (!user) {
-      return { error: 'Invalid username or password' };
-    }
-    // Validate if password in database matches with the credentials entered.
-    if (user.password && (user.password !== loginCredentials.password)) {
+    // Validate if user exists and the password matches.
+    if (!user || ((user.password && (user.password !== loginCredentials.password)))) {
       return { error: 'Invalid username or password' };
     }
 
@@ -92,16 +92,16 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
  */
 export const deleteUserByUsername = async (username: string): Promise<UserResponse> => {
   try {
-    const user = await UserModel.findOneAndDelete({ username });
+    const deletedUser = await UserModel.findOneAndDelete({ username });
 
-    if (!user) {
+    if (!deletedUser) {
       return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
-      _id: user._id,
-      username: user.username,
-      dateJoined: user.dateJoined,
+      _id: deletedUser._id,
+      username: deletedUser.username,
+      dateJoined: deletedUser.dateJoined,
     };
 
     return safeUser;
@@ -120,19 +120,23 @@ export const deleteUserByUsername = async (username: string): Promise<UserRespon
  */
 export const updateUser = async (
   username: string,
-  updates: Partial<User>
+  updates: Partial<User>,
 ): Promise<UserResponse> => {
   try {
-    const user = await UserModel.findOneAndUpdate({ username }, updates, { new: true });
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {username},
+      updates,
+      {new: true}
+    );
 
-    if (!user) {
+    if (!updatedUser) {
       return { error: 'User not found' };
     }
 
     const safeUser: SafeUser = {
-      _id: user._id,
-      username: user.username,
-      dateJoined: user.dateJoined,
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      dateJoined: updatedUser.dateJoined,
     };
 
     return safeUser;
