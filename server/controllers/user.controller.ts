@@ -22,13 +22,12 @@ const userController = () => {
    * @param req The incoming request containing user data.
    * @returns `true` if the body contains valid user fields; otherwise, `false`.
    */
-  const isUserBodyValid = (req: UserRequest): boolean => {
-    return req.body !== undefined &&
+  const isUserBodyValid = (req: UserRequest): boolean =>
+    req.body !== undefined &&
     req.body.username !== undefined &&
     req.body.username !== '' &&
     req.body.password !== undefined &&
     req.body.password !== '';
-  }
 
   /**
    * Handles the creation of a new user account.
@@ -37,9 +36,9 @@ const userController = () => {
    * @returns A promise resolving to void.
    */
   const createUser = async (req: UserRequest, res: Response): Promise<void> => {
-    if(!isUserBodyValid(req)){
-        res.status(400).send('Invalid user body');
-        return;
+    if (!isUserBodyValid(req)) {
+      res.status(400).send('Invalid user body');
+      return;
     }
 
     const newUser: User = {
@@ -70,9 +69,9 @@ const userController = () => {
    */
   const userLogin = async (req: UserRequest, res: Response): Promise<void> => {
     try {
-      if(!isUserBodyValid(req)){
-          res.status(400).send('Invalid user body');
-          return;
+      if (!isUserBodyValid(req)) {
+        res.status(400).send('Invalid user body');
+        return;
       }
 
       const loginCredentials: UserCredentials = {

@@ -12,7 +12,7 @@ export const saveUser = async (user: User): Promise<UserResponse> => {
     // Persist the object to database.
     const savedUser = await UserModel.create(user);
 
-    if(!savedUser){
+    if (!savedUser) {
       return { error: 'Failed to save user' };
     }
 
@@ -67,7 +67,7 @@ export const loginUser = async (loginCredentials: UserCredentials): Promise<User
     const user = await UserModel.findOne({ username: loginCredentials.username });
 
     // Validate if user exists and the password matches.
-    if (!user || ((user.password && (user.password !== loginCredentials.password)))) {
+    if (!user || (user.password && user.password !== loginCredentials.password)) {
       return { error: 'Invalid username or password' };
     }
 
@@ -123,11 +123,7 @@ export const updateUser = async (
   updates: Partial<User>,
 ): Promise<UserResponse> => {
   try {
-    const updatedUser = await UserModel.findOneAndUpdate(
-      {username},
-      updates,
-      {new: true}
-    );
+    const updatedUser = await UserModel.findOneAndUpdate({ username }, updates, { new: true });
 
     if (!updatedUser) {
       return { error: 'User not found' };

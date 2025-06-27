@@ -25,7 +25,7 @@ const mockFailedToDeleteUserMessage = 'Failed to delete user';
 
 const mockDBErrorResponse: UserResponse = {
   error: mockDBErrorMessage,
-}
+};
 
 const mockFailedToLoginResponse: UserResponse = {
   error: mockFailedToLoginMessage,
@@ -33,19 +33,19 @@ const mockFailedToLoginResponse: UserResponse = {
 
 const mockUpdateUserFailedResponse: UserResponse = {
   error: mockUpdateUserFailedMessage,
-}
+};
 
 const mockFailedToGetUserResponse: UserResponse = {
   error: mockFailedToGetUserMessage,
-}
+};
 
 const mockFailedToDeleteUserResponse: UserResponse = {
   error: mockFailedToDeleteUserMessage,
-}
+};
 
 const mockUnknownException = {
   error: 'Unknown exception',
-}
+};
 
 const mockUserJSONResponse = {
   _id: mockUser._id?.toString(),
@@ -63,7 +63,7 @@ describe('Test userController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
-  
+
   describe('POST /signup', () => {
     it('should create a new user given correct arguments', async () => {
       const mockReqBody = {
@@ -118,8 +118,7 @@ describe('Test userController', () => {
       expect(saveUserSpy).toHaveBeenCalledWith({ ...mockReqBody, dateJoined: expect.any(Date) });
     });
 
-    //exception case
-
+    // exception case
   });
 
   describe('POST /login', () => {
@@ -160,27 +159,26 @@ describe('Test userController', () => {
       expect(response.text).toEqual('Invalid user body');
     });
 
-  it('should return 500 for error response from service', async () => {
-    const mockReqBody = {
-      username: mockUser.username,
-      password: mockUser.password,
-    };
+    it('should return 500 for error response from service', async () => {
+      const mockReqBody = {
+        username: mockUser.username,
+        password: mockUser.password,
+      };
 
-    // Mock loginUser to return an error response.
-    loginUserSpy.mockResolvedValueOnce(mockFailedToLoginResponse);
+      // Mock loginUser to return an error response.
+      loginUserSpy.mockResolvedValueOnce(mockFailedToLoginResponse);
 
-    const response = await supertest(app).post('/user/login').send(mockReqBody);
+      const response = await supertest(app).post('/user/login').send(mockReqBody);
 
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual(mockFailedToLoginResponse);
-    expect(loginUserSpy).toHaveBeenCalledWith({ 
-      username: mockUser.username, 
-      password: mockUser.password 
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual(mockFailedToLoginResponse);
+      expect(loginUserSpy).toHaveBeenCalledWith({
+        username: mockUser.username,
+        password: mockUser.password,
+      });
     });
-  });
-  
-  // exception case
 
+    // exception case
   });
 
   describe('PATCH /resetPassword', () => {
@@ -234,11 +232,12 @@ describe('Test userController', () => {
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual(mockUnknownException);
-      expect(updatedUserSpy).toHaveBeenCalledWith(mockUser.username, { password: mockUser.password });
+      expect(updatedUserSpy).toHaveBeenCalledWith(mockUser.username, {
+        password: mockUser.password,
+      });
     });
 
-    //exception case
-
+    // exception case
   });
 
   describe('GET /getUser', () => {
@@ -263,12 +262,11 @@ describe('Test userController', () => {
       getUserByUsernameSpy.mockResolvedValueOnce(mockFailedToGetUserResponse);
 
       const response = await supertest(app).get(`/user/getUser/${mockUser.username}`);
-      
+
       expect(response.status).toBe(500);
       expect(response.body).toEqual(mockUnknownException);
       expect(getUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
     });
-
   });
 
   describe('DELETE /deleteUser', () => {
@@ -298,6 +296,5 @@ describe('Test userController', () => {
       expect(response.body).toEqual(mockFailedToDeleteUserResponse);
       expect(deleteUserByUsernameSpy).toHaveBeenCalledWith(mockUser.username);
     });
-
   });
 });
